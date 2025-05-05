@@ -243,12 +243,14 @@
 
 				calendarGrid.appendChild(cell);
 
+				const rightNow = new Date();
+
 				// Select today's date
-				if (!isLeap && dayOfYear+2 == getDayOfYear(new Date())) {
-					cell.click();
+				if (!isLeap && dayOfYear+2 == getDayOfYear(rightNow) && year == rightNow.getFullYear()) {
+					cell.setAttribute("id", "today");
 				}
-				if (isLeap && dayOfYear+1 == getDayOfYear(new Date())) {
-					cell.click();
+				if (isLeap && dayOfYear+1 == getDayOfYear(rightNow) && year == rightNow.getFullYear()) {
+					cell.setAttribute("id", "today");
 				}
 			}
 		}
@@ -271,6 +273,8 @@
 		});
 
 		renderCalendar(currentDate);
+
+		document.getElementById("today").click();
 	</script>
 </body>
 </html>
