@@ -168,6 +168,7 @@
 		const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 		let currentDate = new Date();
 		let selectedCell = null;
+		let selectedDate = null;
 
 		function renderCalendar(date) {
 			calendarGrid.innerHTML = "";
@@ -208,12 +209,22 @@
 					morganIndex -= 1;
 				}
 
+				const cellDate = new Date(year, month, day);
+				if (selectedDate &&
+					cellDate.getFullYear() === selectedDate.getFullYear() &&
+					cellDate.getMonth() === selectedDate.getMonth() &&
+					cellDate.getDate() === selectedDate.getDate()) {
+					cell.classList.add("selected");
+					selectedCell = cell;
+				}
+
 				if (isLeap && month === 1 && day === 29) {
 					// February 29 Placeholder is the first joint comm between Exalted and Yoostink which features Exalt Morgan
 					cell.addEventListener("click", () => {
 						if (selectedCell) selectedCell.classList.remove("selected");
 						cell.classList.add("selected");
 						selectedCell = cell;
+						selectedDate = new Date(year, month, day);
 						const entry = exalt_morgans[morganIndex];
 						var months = [ "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" ];
 						viewer.innerHTML = `
@@ -228,6 +239,7 @@
 						if (selectedCell) selectedCell.classList.remove("selected");
 						cell.classList.add("selected");
 						selectedCell = cell;
+						selectedDate = new Date(year, month, day);
 						const entry = exalt_morgans[morganIndex];
 						var months = [ "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" ];
 						viewer.innerHTML = `
