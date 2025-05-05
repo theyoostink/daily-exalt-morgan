@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Daily Exalt Morgan</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+	<style>
+		:root {
+			--bg: #fffafc;
+			--panel-bg: #ffeaf2;
+			--highlight: #ffd5e5;
+			--font-color: #333;
+		}
+
+		body {
+			margin: 0;
+			font-family: "Roboto", sans-serif;
+			background-color: var(--bg);
+			color: var(--font-color);
+		}
+
+		h2 {
+			margin: 10px 0 15px 0;
+		}
+
+		.container {
+			display: flex;
+			flex-direction: row;
+			max-width: 1000px;
+			margin: auto;
+			padding: 20px;
+			gap: 20px;
+			flex-wrap: wrap;
+		}
+
+		.viewer {
+			flex: 1 1 300px;
+			background-color: var(--panel-bg);
+			border-radius: 10px;
+			padding: 10px;
+			text-align: center;
+			box-shadow: 2px 2px 6px rgba(0,0,0,0.1);
+		}
+
+		.viewer img {
+			max-width: 100%;
+			border-radius: 8px;
+		}
+
+		.viewer a {
+			display: block;
+			margin-top: 10px;
+			text-decoration: none;
+			color: var(--font-color);
+			font-size: 0.9rem;
+		}
+
+		.calendar-panel {
+			flex: 2 1 500px;
+		}
+
+		.calendar-header {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			background-color: var(--panel-bg);
+			padding: 10px;
+			border-radius: 10px 10px 0 0;
+			margin-bottom: 10px;
+			box-shadow: 2px 2px 6px rgba(0,0,0,0.1);
+		}
+
+		.calendar-grid {
+			display: grid;
+			grid-template-columns: repeat(7, 1fr);
+			gap: 5px;
+			background-color: var(--panel-bg);
+			padding: 10px;
+			border-radius: 0 0 10px 10px;
+			box-shadow: 2px 2px 6px rgba(0,0,0,0.1);
+		}
+
+		.calendar-day,
+		.calendar-cell {
+			text-align: center;
+			padding: 8px;
+		}
+
+		.calendar-day {
+			font-weight: bold;
+			background-color: var(--panel-bg);
+			border-radius: 6px;
+		}
+
+		.calendar-cell {
+			cursor: pointer;
+			border-radius: 6px;
+			background-color: white;
+			transition: background 0.2s;
+		}
+
+		.calendar-cell:hover {
+			background-color: var(--highlight);
+		}
+
+		.calendar-cell.selected {
+			background-color: var(--highlight);
+			font-weight: bold;
+		}
+
+		@media (max-width: 700px) {
+			.container {
+				flex-direction: column;
+				align-items: center;
+			}
+		}
+
+		button {
+			background-color: white;
+			border: 1px solid #ddd;
+			border-radius: 5px;
+			padding: 5px 10px;
+			cursor: pointer;
+		}
+
+		button:hover {
+			background-color: #fbe1eb;
+		}
+
+		#prevMonth:hover, #nextMonth:hover {
+			background-color: white;
+		}
+
+	</style>
+</head>
+<body>
+
+	<h1 style="text-align:center;">Daily Exalt Morgan</h1>
+	<div class="container">
+		<div class="viewer" id="viewer">
+			<p>Select a date to view image</p>
+		</div>
+
+		<div class="calendar-panel">
+			<div class="calendar-header">
+				<button id="prevMonth"><i class="fa-solid fa-chevron-left"></i></button>
+				<h2 id="monthYear"></h2>
+				<button id="nextMonth"><i class="fa-solid fa-chevron-right"></i></button>
+			</div>
+			<div class="calendar-grid" id="calendarGrid">
+				<!-- Calendar goes here -->
+			</div>
+		</div>
+	</div>
+
+	<script src="exalt_morgans.js"></script>
+	<script>
+		const viewer = document.getElementById("viewer");
+		const monthYear = document.getElementById("monthYear");
+		const calendarGrid = document.getElementById("calendarGrid");
+		const prevMonthBtn = document.getElementById("prevMonth");
+		const nextMonthBtn = document.getElementById("nextMonth");
+
+		const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+		let currentDate = new Date();
+		let selectedCell = null;
+
+		function renderCalendar(date) {
+			calendarGrid.innerHTML = "";
+
+			// Header
+			daysOfWeek.forEach(day => {
+				const dayElem = document.createElement("div");
+				dayElem.className = "calendar-day";
+				dayElem.textContent = day;
+				calendarGrid.appendChild(dayElem);
+			});
+
+			const year = date.getFullYear();
+			const month = date.getMonth();
+			const firstDay = new Date(year, month, 1);
+			const startDay = firstDay.getDay();
+			const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+			monthYear.textContent = date.toLocaleString("default", { month: "long", year: "numeric" });
+
+			// Fill empty cells
+			for (let i = 0; i < startDay; i++) {
+				const empty = document.createElement("div");
+				calendarGrid.appendChild(empty);
+			}
+
+			for (let day = 1; day <= daysInMonth; day++) {
+
+				const cell = document.createElement("div");
+				cell.className = "calendar-cell";
+				cell.textContent = day;
+
+				let dayOfYear = getDayOfYear(new Date(year, month, day)) - 1;
+				let morganIndex = dayOfYear;
+				const isLeap = (year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0));
+
+				if (isLeap && dayOfYear > 59) {
+					morganIndex -= 1;
+				}
+
+				if (isLeap && month === 1 && day === 29) {
+					// February 29 Placeholder is the first joint comm between Exalted and Yoostink which features Exalt Morgan
+					cell.addEventListener("click", () => {
+						if (selectedCell) selectedCell.classList.remove("selected");
+						cell.classList.add("selected");
+						selectedCell = cell;
+						const entry = exalt_morgans[morganIndex];
+						var months = [ "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" ];
+						viewer.innerHTML = `
+							<h2>${months[month]} ${day}</h2>
+							<img src="https://cdn.imgchest.com/files/d7ogcq8zgby.jpg" alt="Day ${dayOfYear + 1}">
+							<a href="https://x.com/AcrylicStroke/status/1456635598463135755" target="_blank">View Source</a>
+						`;
+					});
+				}
+				else if ((dayOfYear >= 0 && dayOfYear < exalt_morgans.length) || (isLeap && month === 11 && day === 31)) {
+					cell.addEventListener("click", () => {
+						if (selectedCell) selectedCell.classList.remove("selected");
+						cell.classList.add("selected");
+						selectedCell = cell;
+						const entry = exalt_morgans[morganIndex];
+						var months = [ "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" ];
+						viewer.innerHTML = `
+							<h2>${months[month]} ${day}</h2>
+							<img src="${entry.image_url}" alt="Day ${dayOfYear + 1}">
+							<a href="${entry.publish_url}" target="_blank">View Source</a>
+						`;
+					});
+				} else {
+					cell.style.opacity = "0.4";
+					cell.style.cursor = "default";
+				}
+
+				calendarGrid.appendChild(cell);
+
+				// Select today's date
+				if (!isLeap && dayOfYear+2 == getDayOfYear(new Date())) {
+					cell.click();
+				}
+				if (isLeap && dayOfYear+1 == getDayOfYear(new Date())) {
+					cell.click();
+				}
+			}
+		}
+
+		function getDayOfYear(date) {
+			const start = new Date(date.getFullYear(), 0, 0);
+			const diff = date - start;
+			const oneDay = 1000 * 60 * 60 * 24;
+			return Math.floor(diff / oneDay);
+		}
+
+		prevMonthBtn.addEventListener("click", () => {
+			currentDate.setMonth(currentDate.getMonth() - 1);
+			renderCalendar(currentDate);
+		});
+
+		nextMonthBtn.addEventListener("click", () => {
+			currentDate.setMonth(currentDate.getMonth() + 1);
+			renderCalendar(currentDate);
+		});
+
+		renderCalendar(currentDate);
+	</script>
+</body>
+</html>
